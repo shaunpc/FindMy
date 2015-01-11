@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">FindMy</string>
+    <string name="title_activity_main">Find My&#8230;</string>
+    <string name="action_settings">Settings</string>
+    <string name="latitude_label">Latitude: </string>
+    <string name="longitude_label">Longitude: </string>
+    <string name="button1">Unicorn</string>
+    <string name="button2">Special </string>
+
+    <string name="unicorn_button_text">
+        <![CDATA[
+            <p><font color="#CC0000">U</font>
+               <font color="#FFCC00">n</font>
+               <font color="#FFDE00">i</font>
+               <font color="#097054">c</font>
+               <font color="#000080">o</font>
+               <font color="#8C489F">r</font>
+               <font color="#443266">n</font></p>
+        ]]>
+    </string>
+
+</resources>
