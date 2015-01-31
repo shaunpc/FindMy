@@ -7,6 +7,7 @@ import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -46,8 +47,8 @@ public class MainActivity extends ActionBarActivity implements
     protected TextView mLatitudeText;
     protected TextView mLongitudeText;
 
-    Button unicornButton;
-    Button specialButton;
+    ImageButton u1Button;
+    ImageButton u2Button;
 
     Marker melbourne;
     LatLng MELBOURNE;
@@ -72,10 +73,10 @@ public class MainActivity extends ActionBarActivity implements
             mapFragment.getMapAsync(this);
         }
 
-        unicornButton = (Button) findViewById(R.id.button1);
-        unicornButton.setText(Html.fromHtml(getString(R.string.unicorn_button_text)));
+        u1Button = (ImageButton) findViewById(R.id.button1);
+//        unicornButton.setText(Html.fromHtml(getString(R.string.unicorn_button_text)));
 
-        specialButton = (Button) findViewById(R.id.button2);
+        u2Button = (ImageButton) findViewById(R.id.button2);
 
 
     }

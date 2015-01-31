@@ -2,7 +2,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/layout_padding">
+    android:background="@android:color/holo_orange_light">
 
     <LinearLayout
         android:orientation="horizontal"
@@ -75,29 +75,114 @@
             android:name="com.google.android.gms.maps.SupportMapFragment" />
     </LinearLayout>
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
+    <HorizontalScrollView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center">
+        android:background="@android:color/holo_orange_light"
+        android:paddingTop="@dimen/layout_padding"
+        android:paddingBottom="@dimen/layout_padding">
 
-        <Button
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/button1"
-            android:onClick="onUnicornButton"
-            android:id="@+id/button1"
-            android:layout_weight="1"
-            style="?android:buttonBarButtonStyle" />
+            android:layout_gravity="center"
+            android:divider="?android:dividerVertical"
+            android:showDividers="middle|beginning|end"
+            android:dividerPadding="25dp"
+            android:nestedScrollingEnabled="false"
+            android:paddingLeft="@dimen/layout_padding"
+            android:paddingRight="@dimen/layout_padding">
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/button2"
-            android:id="@+id/button2"
-            android:layout_weight="1"
-            style="?android:buttonBarButtonStyle" />
+            <ImageButton
+                android:background="@drawable/buttonshape"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:onClick="onUnicornButton"
+                android:id="@+id/button1"
+                android:src="@drawable/ic_unicorn1"
+                android:contentDescription="@string/button1"
+                android:gravity="center"
+                android:padding="@dimen/layout_padding" />
 
-    </LinearLayout>
+            <ImageButton
+                android:background="@drawable/buttonshape"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:onClick="onUnicornButton"
+                android:id="@+id/button2"
+                android:src="@drawable/ic_unicorn2"
+                android:contentDescription="@string/button2"
+                android:gravity="center"
+                android:padding="@dimen/layout_padding" />
+
+            <ImageButton
+                android:background="@drawable/buttonshape"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:onClick="onUnicornButton"
+                android:id="@+id/button3"
+                android:src="@drawable/ic_unicorn3"
+                android:contentDescription="@string/button3"
+                android:gravity="center"
+                android:padding="@dimen/layout_padding" />
+
+            <ImageButton
+                android:background="@drawable/buttonshape"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:onClick="onUnicornButton"
+                android:id="@+id/button4"
+                android:src="@drawable/ic_unicorn4"
+                android:contentDescription="@string/button4"
+                android:gravity="center"
+                android:padding="@dimen/layout_padding" />
+
+            <ImageButton
+                android:background="@drawable/buttonshape"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:onClick="onUnicornButton"
+                android:id="@+id/button5"
+                android:src="@drawable/ic_unicorn5"
+                android:contentDescription="@string/button5"
+                android:gravity="center"
+                android:padding="@dimen/layout_padding" />
+
+            <ImageButton
+                android:background="@drawable/buttonshape"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:onClick="onUnicornButton"
+                android:id="@+id/button6"
+                android:src="@drawable/ic_unicorn6"
+                android:contentDescription="@string/button6"
+                android:gravity="center"
+                android:padding="@dimen/layout_padding" />
+
+            <ImageButton
+                android:background="@drawable/buttonshape"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:onClick="onUnicornButton"
+                android:id="@+id/button7"
+                android:src="@drawable/ic_unicorn7"
+                android:contentDescription="@string/button7"
+                android:gravity="center"
+                android:padding="@dimen/layout_padding" />
+
+            <ImageButton
+                android:background="@drawable/buttonshape"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:onClick="onUnicornButton"
+                android:id="@+id/button8"
+                android:src="@drawable/ic_unicorn8"
+                android:contentDescription="@string/button8"
+                android:gravity="center"
+                android:padding="@dimen/layout_padding" />
+        </LinearLayout>
+
+    </HorizontalScrollView>
 
 </LinearLayout>
