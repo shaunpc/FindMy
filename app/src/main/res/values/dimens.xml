@@ -7,4 +7,6 @@
     <dimen name="lat_long_text_size">16sp</dimen>
     <dimen name="text_margin_top">24dp</dimen>
     <dimen name="text_margin_side">10dp</dimen>
+
+    <dimen name="unicorn_button_top_margin">3dp</dimen>
 </resources>

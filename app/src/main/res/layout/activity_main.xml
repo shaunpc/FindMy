@@ -4,60 +4,60 @@
     android:layout_height="match_parent"
     android:background="@android:color/holo_orange_light">
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center">
+    <!--<LinearLayout-->
+    <!--android:orientation="horizontal"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_gravity="center">-->
 
-        <TextView
-            android:id="@+id/latitude_label"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/latitude_label"
-            android:textSize="@dimen/lat_long_text_size"
-            android:gravity="center" />
+    <!--<TextView-->
+    <!--android:id="@+id/latitude_label"-->
+    <!--android:layout_weight="1"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:text="@string/latitude_label"-->
+    <!--android:textSize="@dimen/lat_long_text_size"-->
+    <!--android:gravity="center" />-->
 
-        <TextView
-            android:id="@+id/latitude_text"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/text_margin_side"
-            android:layout_marginStart="@dimen/text_margin_side"
-            android:textIsSelectable="true"
-            android:textSize="@dimen/lat_long_text_size"
-            android:gravity="start" />
+    <!--<TextView-->
+    <!--android:id="@+id/latitude_text"-->
+    <!--android:layout_weight="1"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_marginLeft="@dimen/text_margin_side"-->
+    <!--android:layout_marginStart="@dimen/text_margin_side"-->
+    <!--android:textIsSelectable="true"-->
+    <!--android:textSize="@dimen/lat_long_text_size"-->
+    <!--android:gravity="start" />-->
 
-    </LinearLayout>
+    <!--</LinearLayout>-->
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center">
+    <!--<LinearLayout-->
+    <!--android:orientation="horizontal"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_gravity="center">-->
 
-        <TextView
-            android:id="@+id/longitude_label"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/longitude_label"
-            android:textSize="@dimen/lat_long_text_size"
-            android:gravity="center" />
+    <!--<TextView-->
+    <!--android:id="@+id/longitude_label"-->
+    <!--android:layout_weight="1"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:text="@string/longitude_label"-->
+    <!--android:textSize="@dimen/lat_long_text_size"-->
+    <!--android:gravity="center" />-->
 
-        <TextView
-            android:id="@+id/longitude_text"
-            android:layout_weight="1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/text_margin_side"
-            android:layout_marginStart="@dimen/text_margin_side"
-            android:textIsSelectable="true"
-            android:textSize="@dimen/lat_long_text_size"
-            android:gravity="start" />
-    </LinearLayout>
+    <!--<TextView-->
+    <!--android:id="@+id/longitude_text"-->
+    <!--android:layout_weight="1"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_marginLeft="@dimen/text_margin_side"-->
+    <!--android:layout_marginStart="@dimen/text_margin_side"-->
+    <!--android:textIsSelectable="true"-->
+    <!--android:textSize="@dimen/lat_long_text_size"-->
+    <!--android:gravity="start" />-->
+    <!--</LinearLayout>-->
 
     <LinearLayout
         android:orientation="vertical"
@@ -75,112 +75,252 @@
             android:name="com.google.android.gms.maps.SupportMapFragment" />
     </LinearLayout>
 
-    <HorizontalScrollView
-        android:layout_width="wrap_content"
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/main_buttons"
         android:background="@android:color/holo_orange_light"
         android:paddingTop="@dimen/layout_padding"
         android:paddingBottom="@dimen/layout_padding">
 
+        <Space
+            android:layout_width="5dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <Button
+            android:background="@drawable/buttonshapeunicorn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:onClick="onStartUnicorns"
+            android:id="@+id/button_unicorn"
+            android:text="@string/button_unicon"
+            android:gravity="center"
+            android:paddingLeft="@dimen/layout_padding"
+            android:paddingRight="@dimen/layout_padding" />
+
+        <Space
+            android:layout_width="5dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <Button
+            android:background="@drawable/buttonshape"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:onClick="onStartMyself"
+            android:id="@+id/button_myself"
+            android:text="@string/button_myself"
+            android:gravity="center"
+            android:paddingLeft="@dimen/layout_padding"
+            android:paddingRight="@dimen/layout_padding" />
+
+        <Space
+            android:layout_width="5dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <Button
+            android:background="@drawable/buttonshape"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:onClick="onStartSpecial"
+            android:id="@+id/button_special"
+            android:text="@string/button_special"
+            android:gravity="center"
+            android:paddingLeft="@dimen/layout_padding"
+            android:paddingRight="@dimen/layout_padding" />
+
+        <Space
+            android:layout_width="5dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+    <HorizontalScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/unicorn_buttons"
+        android:visibility="gone"
+        android:background="@android:color/holo_orange_light"
+        android:paddingTop="@dimen/unicorn_button_top_margin"
+        android:paddingBottom="@dimen/unicorn_button_top_margin">
+
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
             android:layout_gravity="center"
-            android:divider="?android:dividerVertical"
-            android:showDividers="middle|beginning|end"
-            android:dividerPadding="25dp"
-            android:nestedScrollingEnabled="false"
             android:paddingLeft="@dimen/layout_padding"
             android:paddingRight="@dimen/layout_padding">
 
             <ImageButton
-                android:background="@drawable/buttonshape"
+                android:background="@drawable/buttonshapeunicorn"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:onClick="onUnicornButton"
                 android:id="@+id/button1"
                 android:src="@drawable/ic_unicorn1"
                 android:contentDescription="@string/button1"
                 android:gravity="center"
-                android:padding="@dimen/layout_padding" />
+                android:paddingLeft="@dimen/layout_padding"
+                android:paddingRight="@dimen/layout_padding"
+                android:paddingTop="@dimen/unicorn_button_top_margin"
+                android:paddingBottom="@dimen/unicorn_button_top_margin"
+                android:adjustViewBounds="true"
+                android:scaleType="centerInside"
+                android:layout_gravity="center" />
+
+            <Space
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
             <ImageButton
-                android:background="@drawable/buttonshape"
+                android:background="@drawable/buttonshapeunicorn"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:onClick="onUnicornButton"
                 android:id="@+id/button2"
                 android:src="@drawable/ic_unicorn2"
                 android:contentDescription="@string/button2"
                 android:gravity="center"
-                android:padding="@dimen/layout_padding" />
+                android:paddingLeft="@dimen/layout_padding"
+                android:paddingRight="@dimen/layout_padding"
+                android:paddingTop="@dimen/unicorn_button_top_margin"
+                android:paddingBottom="@dimen/unicorn_button_top_margin"
+                android:adjustViewBounds="true"
+                android:scaleType="centerInside"
+                android:layout_gravity="center" />
+
+            <Space
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
             <ImageButton
-                android:background="@drawable/buttonshape"
+                android:background="@drawable/buttonshapeunicorn"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:onClick="onUnicornButton"
                 android:id="@+id/button3"
                 android:src="@drawable/ic_unicorn3"
                 android:contentDescription="@string/button3"
                 android:gravity="center"
-                android:padding="@dimen/layout_padding" />
+                android:paddingLeft="@dimen/layout_padding"
+                android:paddingRight="@dimen/layout_padding"
+                android:paddingTop="@dimen/unicorn_button_top_margin"
+                android:paddingBottom="@dimen/unicorn_button_top_margin"
+                android:layout_gravity="center"
+                android:scaleType="centerInside" />
+
+            <Space
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
             <ImageButton
-                android:background="@drawable/buttonshape"
+                android:background="@drawable/buttonshapeunicorn"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:onClick="onUnicornButton"
                 android:id="@+id/button4"
                 android:src="@drawable/ic_unicorn4"
                 android:contentDescription="@string/button4"
                 android:gravity="center"
-                android:padding="@dimen/layout_padding" />
+                android:paddingLeft="@dimen/layout_padding"
+                android:paddingRight="@dimen/layout_padding"
+                android:paddingTop="@dimen/unicorn_button_top_margin"
+                android:paddingBottom="@dimen/unicorn_button_top_margin"
+                android:layout_gravity="center"
+                android:scaleType="centerInside" />
+
+            <Space
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
             <ImageButton
-                android:background="@drawable/buttonshape"
+                android:background="@drawable/buttonshapeunicorn"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:onClick="onUnicornButton"
                 android:id="@+id/button5"
                 android:src="@drawable/ic_unicorn5"
                 android:contentDescription="@string/button5"
                 android:gravity="center"
-                android:padding="@dimen/layout_padding" />
+                android:paddingLeft="@dimen/layout_padding"
+                android:paddingRight="@dimen/layout_padding"
+                android:paddingTop="@dimen/unicorn_button_top_margin"
+                android:paddingBottom="@dimen/unicorn_button_top_margin"
+                android:layout_gravity="center"
+                android:scaleType="centerInside" />
+
+            <Space
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
             <ImageButton
-                android:background="@drawable/buttonshape"
+                android:background="@drawable/buttonshapeunicorn"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:onClick="onUnicornButton"
                 android:id="@+id/button6"
                 android:src="@drawable/ic_unicorn6"
                 android:contentDescription="@string/button6"
                 android:gravity="center"
-                android:padding="@dimen/layout_padding" />
+                android:paddingLeft="@dimen/layout_padding"
+                android:paddingRight="@dimen/layout_padding"
+                android:paddingTop="@dimen/unicorn_button_top_margin"
+                android:paddingBottom="@dimen/unicorn_button_top_margin"
+                android:layout_gravity="center"
+                android:scaleType="centerInside" />
+
+            <Space
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
             <ImageButton
-                android:background="@drawable/buttonshape"
+                android:background="@drawable/buttonshapeunicorn"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:onClick="onUnicornButton"
                 android:id="@+id/button7"
                 android:src="@drawable/ic_unicorn7"
                 android:contentDescription="@string/button7"
                 android:gravity="center"
-                android:padding="@dimen/layout_padding" />
+                android:paddingLeft="@dimen/layout_padding"
+                android:paddingRight="@dimen/layout_padding"
+                android:paddingTop="@dimen/unicorn_button_top_margin"
+                android:paddingBottom="@dimen/unicorn_button_top_margin"
+                android:layout_gravity="center"
+                android:scaleType="centerInside" />
+
+            <Space
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
             <ImageButton
-                android:background="@drawable/buttonshape"
+                android:background="@drawable/buttonshapeunicorn"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:onClick="onUnicornButton"
                 android:id="@+id/button8"
                 android:src="@drawable/ic_unicorn8"
                 android:contentDescription="@string/button8"
                 android:gravity="center"
-                android:padding="@dimen/layout_padding" />
+                android:paddingLeft="@dimen/layout_padding"
+                android:paddingRight="@dimen/layout_padding"
+                android:paddingTop="@dimen/unicorn_button_top_margin"
+                android:paddingBottom="@dimen/unicorn_button_top_margin"
+                android:layout_gravity="center"
+                android:scaleType="centerInside" />
+
         </LinearLayout>
 
     </HorizontalScrollView>

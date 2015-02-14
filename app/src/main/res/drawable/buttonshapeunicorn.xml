@@ -6,13 +6,13 @@
         android:topRightRadius="15dp"
         android:bottomLeftRadius="15dp"
         android:bottomRightRadius="15dp" />
-    <!--<gradient-->
-    <!--android:angle="45"-->
-    <!--android:centerX="29%"-->
-    <!--android:centerColor="#32A84E"-->
-    <!--android:startColor="#E8D73C"-->
-    <!--android:endColor="#F954FF"-->
-    <!--android:type="linear" />-->
+    <gradient
+        android:angle="45"
+        android:centerX="29%"
+        android:centerColor="#32A84E"
+        android:startColor="#E8D73C"
+        android:endColor="#F954FF"
+        android:type="linear" />
     <stroke
         android:width="2dp"
         android:color="#0B3487" />
