@@ -53,5 +53,12 @@
     <string name="ds_unicorn7">Marigold is as sweet as a Shetland pony. She is silver like the moonlight, and she changes the weather</string>
     <string name="ds_unicorn8">Poppy is quick-witted and bright as a spark. She is as lovely as the day is long, and she makes wishes into horses</string>
 
+    <!--FetchAddress error messages-->
+    <string name="no_location_data_provided">No location data provided</string>
+    <string name="service_not_available">Service Not Available</string>
+    <string name="invalid_lat_long_used">Invalid lat_long_used</string>
+    <string name="no_address_found">No address found</string>
+    <string name="address_found">Address found</string>
+
 
 </resources>

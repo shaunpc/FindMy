@@ -1,7 +1,10 @@
 package com.spc.findmy;
 
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.support.v7.app.ActionBarActivity;
 import android.text.Html;
 import android.util.Log;
@@ -40,6 +43,8 @@ public class MainActivity extends ActionBarActivity implements
     // Store key variables in the onSaveInstanceState call (cleaner than PrefsFile)
     static final String UNICORN_MODE = "UnicornMode";
 
+    // this is the receiver for the FetchAddress intent
+    private AddressResultReceiver mResultReceiver;
 
     /**
      * Provides the entry point to Google Play services.
@@ -87,7 +92,6 @@ public class MainActivity extends ActionBarActivity implements
         // Get the ID of the main button view, and the unicorn scrollable button view
         Log.i(TAG, "...mainButtons");
         mainButtons = findViewById(R.id.main_buttons);
-        Log.i(TAG, "...unicornButtons");
         unicornButtons = findViewById(R.id.unicorn_buttons);
 
         // Put some funky coloured text in the UNICORN button
@@ -98,17 +102,23 @@ public class MainActivity extends ActionBarActivity implements
         unicorn_mode = false;
 
         // Set up all the unicorn names, etc.
+        Log.i(TAG, "...creating unicorn array");
         createUnicornArray();
+
+        // Ensure the FetchAddress service has something to return result to
+        mResultReceiver = new AddressResultReceiver(new Handler());
 
         Log.i(TAG, "...done onCreate");
     }
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
         googleMap.addMarker(new MarkerOptions()
                 .position(new LatLng(0, 0))
-                .title("Center of the World : Latitude 0 / Longitude 0"));
+                .title("Center of the World")
+                .snippet("Latitude 0 / Longitude 0"));
 
         // Sets the map type to be "hybrid"
         googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
@@ -116,8 +126,8 @@ public class MainActivity extends ActionBarActivity implements
         googleMap.setMyLocationEnabled(true);
         // Set the map toolbar to be enabled
 
-        googleMap.getUiSettings().setMyLocationButtonEnabled(true);
-        googleMap.getUiSettings().setMapToolbarEnabled(true);
+        googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+        googleMap.getUiSettings().setMapToolbarEnabled(false);
         googleMap.getUiSettings().setZoomControlsEnabled(true);
 
 
@@ -148,8 +158,21 @@ public class MainActivity extends ActionBarActivity implements
 
             }
         });
+
+
         // Ensure other functions can access this map when ready
         map = googleMap;
+
+
+        // Set a listener on an infowindow, such that clicking it hides it again
+        map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                Log.v(TAG, "Hiding marker InfoWindow: " + marker.getTitle());
+                marker.hideInfoWindow();
+
+            }
+        });
     }
 
 
@@ -220,16 +243,35 @@ public class MainActivity extends ActionBarActivity implements
 
         // relocate the appropriate Unicorn
         unicorns[i].relocate(map);
-        Log.i(TAG, "Unicorn " + i + " (" + unicorns[i].getName() + ") moved to LatLng " + unicorns[i].getLocation());
 
         // Construct a CameraPosition and move there...
+        // zoom level 0 is the whole world, the higher the number, the more detailed/closer view
+        int zoom_level = (int) ((Math.random() * 10) + 5);
+        Log.i(TAG, "...zoom level will be " + zoom_level);
+
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(unicorns[i].getLocation())
-                .zoom(10)   // 0 is the whole world, the higher the number, the more detailed/closer view
+                .zoom(zoom_level)
                 .build();
         map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
+        mLastLocation = new Location("");
+        mLastLocation.setLatitude(unicorns[i].getLocation().latitude);
+        mLastLocation.setLongitude(unicorns[i].getLocation().longitude);
+        // Only start the service to fetch the address if GoogleApiClient is
+        // connected.
+        if (mGoogleApiClient.isConnected() && mLastLocation != null) {
+            startIntentService();
+        }
 
+    }
+
+    protected void startIntentService() {
+
+        Intent intent = new Intent(this, FetchAddressIntentService.class);
+        intent.putExtra(Constants.RECEIVER, mResultReceiver);
+        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mLastLocation);
+        startService(intent);
     }
 
     public void onStartMyself(View v) {
@@ -252,6 +294,45 @@ public class MainActivity extends ActionBarActivity implements
             Toast.makeText(getApplicationContext(), "Can't find myself for some reason!", Toast.LENGTH_SHORT).show();
         }
 
+        // Only start the service to fetch the address if GoogleApiClient is
+        // connected.
+        if (mGoogleApiClient.isConnected() && mLastLocation != null) {
+            startIntentService();
+        }
+
+    }
+
+    class AddressResultReceiver extends ResultReceiver {
+        public AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+            String mAddressOutput;
+            // Display the address string
+            // or an error message sent from the intent service.
+            mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
+            Log.v(TAG, "AddressOutput is " + mAddressOutput);
+
+            if (unicorn_mode) {
+                if (resultCode == Constants.SUCCESS_RESULT) {
+                    Toast.makeText(getApplicationContext(), "Unicorn has been found in " + mAddressOutput, Toast.LENGTH_SHORT).show();
+                }
+                if (resultCode == Constants.FAILURE_RESULT
+                        && mAddressOutput.equals(getResources().getString(R.string.no_address_found))) {
+                    Toast.makeText(getApplicationContext(), "Looks like this Unicorn is flying over water!", Toast.LENGTH_SHORT).show();
+                }
+
+
+            } else {
+                // Show a toast message if an address was found.
+                if (resultCode == Constants.SUCCESS_RESULT) {
+                    Toast.makeText(getApplicationContext(), "You're in " + mAddressOutput, Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
 
     }
 
@@ -285,22 +366,22 @@ public class MainActivity extends ActionBarActivity implements
      */
     @Override
     public void onConnected(Bundle connectionHint) {
-// Provides a simple way of getting a device's location and is well suited for
-// applications that do not require a fine-grained location and that do not need location
-// updates. Gets the best and most recent location currently available, which may be null
-// in rare cases when a location is not available.
+        // Provides a simple way of getting a device's location and is well suited for
+        // applications that do not require a fine-grained location and that do not need location
+        // updates. Gets the best and most recent location currently available, which may be null
+        // in rare cases when a location is not available.
         Log.i(TAG, "API: onConnected...");
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-//        if (mLastLocation != null) {
-//            mLatitudeText.setText(String.valueOf(mLastLocation.getLatitude()));
-//            mLongitudeText.setText(String.valueOf(mLastLocation.getLongitude()));
-//        }
+        //        if (mLastLocation != null) {
+        //            mLatitudeText.setText(String.valueOf(mLastLocation.getLatitude()));
+        //            mLongitudeText.setText(String.valueOf(mLastLocation.getLongitude()));
+        //        }
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult result) {
-// Refer to the javadoc for ConnectionResult to see what error codes might be returned in
-// onConnectionFailed.
+        // Refer to the javadoc for ConnectionResult to see what error codes might be returned in
+        // onConnectionFailed.
         Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
     }
 
@@ -314,8 +395,8 @@ public class MainActivity extends ActionBarActivity implements
 
     @Override
     public void onConnectionSuspended(int cause) {
-// The connection to Google Play services was lost for some reason. We call connect() to
-// attempt to re-establish the connection.
+        // The connection to Google Play services was lost for some reason. We call connect() to
+        // attempt to re-establish the connection.
         Log.i(TAG, "API: Connection suspended");
         mGoogleApiClient.connect();
     }
@@ -348,7 +429,11 @@ public class MainActivity extends ActionBarActivity implements
 
     public void createUnicornArray() {
 
-        //Populate the Unicorn array
+        //Define and populate the Unicorn array
+        unicorns = new Unicorn[9];
+
+        Log.i(TAG, "...starting to populate unicorn array");
+        unicorns[0] = new Unicorn("ZERO", "ZERO", R.drawable.ic_launcher);
         unicorns[1] = new Unicorn(
                 getResources().getString(R.string.nm_unicorn1),
                 getResources().getString(R.string.ds_unicorn1),
@@ -381,7 +466,7 @@ public class MainActivity extends ActionBarActivity implements
                 getResources().getString(R.string.nm_unicorn8),
                 getResources().getString(R.string.ds_unicorn8),
                 R.drawable.ic_unicorn8);
-
+        Log.i(TAG, "...completed populating unicorn array");
     }
 
 }
