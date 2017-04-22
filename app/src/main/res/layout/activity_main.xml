@@ -4,75 +4,22 @@
     android:layout_height="match_parent"
     android:background="@android:color/holo_orange_light">
 
-    <!--<LinearLayout-->
-    <!--android:orientation="horizontal"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_gravity="center">-->
-
-    <!--<TextView-->
-    <!--android:id="@+id/latitude_label"-->
-    <!--android:layout_weight="1"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:text="@string/latitude_label"-->
-    <!--android:textSize="@dimen/lat_long_text_size"-->
-    <!--android:gravity="center" />-->
-
-    <!--<TextView-->
-    <!--android:id="@+id/latitude_text"-->
-    <!--android:layout_weight="1"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_marginLeft="@dimen/text_margin_side"-->
-    <!--android:layout_marginStart="@dimen/text_margin_side"-->
-    <!--android:textIsSelectable="true"-->
-    <!--android:textSize="@dimen/lat_long_text_size"-->
-    <!--android:gravity="start" />-->
-
-    <!--</LinearLayout>-->
-
-    <!--<LinearLayout-->
-    <!--android:orientation="horizontal"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_gravity="center">-->
-
-    <!--<TextView-->
-    <!--android:id="@+id/longitude_label"-->
-    <!--android:layout_weight="1"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:text="@string/longitude_label"-->
-    <!--android:textSize="@dimen/lat_long_text_size"-->
-    <!--android:gravity="center" />-->
-
-    <!--<TextView-->
-    <!--android:id="@+id/longitude_text"-->
-    <!--android:layout_weight="1"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_marginLeft="@dimen/text_margin_side"-->
-    <!--android:layout_marginStart="@dimen/text_margin_side"-->
-    <!--android:textIsSelectable="true"-->
-    <!--android:textSize="@dimen/lat_long_text_size"-->
-    <!--android:gravity="start" />-->
-    <!--</LinearLayout>-->
-
     <LinearLayout
-        android:orientation="vertical"
+        android:id="@+id/maplayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_gravity="center"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:orientation="vertical">
 
         <fragment xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
+            class="com.google.android.gms.maps.MapFragment"
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/map"
-            tools:context="com.spc.findmy.MapsActivity"
-            android:name="com.google.android.gms.maps.SupportMapFragment" />
+            tools:context="com.spc.findmy.MapsActivity" />
     </LinearLayout>
 
 

@@ -1,17 +1,20 @@
 package com.spc.findmy;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
-//import android.widget.ImageButton;
-//import android.widget.TextView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,7 +39,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
  * See https://github.com/googlesamples/android-google-accounts/tree/master/QuickStart if you are
  * also using APIs that need authentication.
  */
-public class MainActivity extends ActionBarActivity implements
+public class MainActivity extends AppCompatActivity implements
         ConnectionCallbacks, OnConnectionFailedListener, OnMapReadyCallback {
     protected static final String TAG = "FindMy";
 
@@ -65,6 +68,7 @@ public class MainActivity extends ActionBarActivity implements
 
     SupportMapFragment mapFragment;
     GoogleMap map;
+    ViewGroup mapParent = null;    // TODO - not entirely sure this is good enough!
 
     // create an array of Unicorns
     Unicorn unicorns[];
@@ -96,7 +100,8 @@ public class MainActivity extends ActionBarActivity implements
 
         // Put some funky coloured text in the UNICORN button
         unicornButton = (Button) findViewById(R.id.button_unicorn);
-        unicornButton.setText(Html.fromHtml(getString(R.string.unicorn_button_text)));
+        Spanned result = getSpannedHtml(getString(R.string.unicorn_button_text));
+        unicornButton.setText(result);
 
         // setting start-mode, may get overwritten onRestoreInstanceState
         unicorn_mode = false;
@@ -111,6 +116,14 @@ public class MainActivity extends ActionBarActivity implements
         Log.i(TAG, "...done onCreate");
     }
 
+    private Spanned getSpannedHtml(String string) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            return Html.fromHtml(string, Html.FROM_HTML_MODE_LEGACY);
+        } else {
+            return Html.fromHtml(string);
+        }
+    }
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -123,6 +136,16 @@ public class MainActivity extends ActionBarActivity implements
         // Sets the map type to be "hybrid"
         googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         // Sets my-location button
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling to request missing permissions
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         googleMap.setMyLocationEnabled(true);
         // Set the map toolbar to be enabled
 
@@ -145,7 +168,7 @@ public class MainActivity extends ActionBarActivity implements
             public View getInfoContents(Marker arg0) {
 
                 // Getting view from the layout file info_window_layout
-                View v = getLayoutInflater().inflate(R.layout.map_marker, null);
+                View v = getLayoutInflater().inflate(R.layout.map_marker, mapParent, false);
 
                 // get and set the TextViews to set Unicorn details
                 TextView tvName = (TextView) v.findViewById(R.id.markerName);
@@ -199,7 +222,7 @@ public class MainActivity extends ActionBarActivity implements
 
     public void onStartSpecial(View v) {
 
-        //TODO
+        //TODO - Need to doing something with "Special" view
         Toast.makeText(getApplicationContext(), "Can't do anything special yet", Toast.LENGTH_SHORT).show();
 
     }
@@ -276,6 +299,17 @@ public class MainActivity extends ActionBarActivity implements
 
     public void onStartMyself(View v) {
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // ODO: Consider calling to request missing permissions
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+
+            return;
+        }
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation != null) {
             Toast.makeText(getApplicationContext(),
@@ -371,6 +405,17 @@ public class MainActivity extends ActionBarActivity implements
         // updates. Gets the best and most recent location currently available, which may be null
         // in rare cases when a location is not available.
         Log.i(TAG, "API: onConnected...");
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // ODO: Consider calling to request missing permissions
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+
+            return;
+        }
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         //        if (mLastLocation != null) {
         //            mLatitudeText.setText(String.valueOf(mLastLocation.getLatitude()));
@@ -382,7 +427,8 @@ public class MainActivity extends ActionBarActivity implements
     public void onConnectionFailed(ConnectionResult result) {
         // Refer to the javadoc for ConnectionResult to see what error codes might be returned in
         // onConnectionFailed.
-        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + result.getErrorCode());
+        int err = result.getErrorCode();
+        Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + err);
     }
 
     /*

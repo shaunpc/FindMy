@@ -8,11 +8,12 @@
 https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=64:96:36:E5:87:26:B3:93:71:41:51:E7:9C:E9:8A:E4:BB:03:FB:A9%3Bcom.spc.findmy
 
     You can also add your credentials to an existing key, using this line:
-    64:96:36:E5:87:26:B3:93:71:41:51:E7:9C:E9:8A:E4:BB:03:FB:A9;com.spc.findmy
+    old setup: 64:96:36:E5:87:26:B3:93:71:41:51:E7:9C:E9:8A:E4:BB:03:FB:A9;com.spc.findmy
+    new setup: 93:04:DE:3F:8F:EE:31:F9:43:70:51:10:AA:CF:69:48:F1:65:0F:49;com.spc.findmy
 
     Once you have your key (it starts with "AIza"), replace the "google_maps_key"
     string in this file.
     --></string>
 
-    <string name="google_maps_key" templateMergeStrategy="preserve">AIzaSyDuZ0vJiA0k18nRApyuw3Ft9O2RM9jTeBs</string>
+    <string name="google_maps_key" templateMergeStrategy="preserve">AIzaSyDKoEnjSMY0b_IxlKOl2HRrwTh173t23b0</string>
 </resources>
