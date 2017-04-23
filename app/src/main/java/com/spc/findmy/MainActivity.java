@@ -32,46 +32,33 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import static com.spc.findmy.Constants.MY_PERMISSIONS_REQUEST_LOCATION;
+
 /**
- * Location sample.
- * Demonstrates use of the Location API to retrieve the last known location for a device.
- * This sample uses Google Play services (GoogleApiClient) but does not need to authenticate a user.
- * See https://github.com/googlesamples/android-google-accounts/tree/master/QuickStart if you are
- * also using APIs that need authentication.
- */
+ * Based on Google "Location" sample application.
+ * Uses of the Location API from GooglePlayServices to retrieve the last known location for a
+ * device, and to find address text of where Unicorns land!
+  */
 public class MainActivity extends AppCompatActivity implements
-        ConnectionCallbacks, OnConnectionFailedListener, OnMapReadyCallback {
-    protected static final String TAG = "FindMy";
+        ConnectionCallbacks, OnConnectionFailedListener {
 
-    // Store key variables in the onSaveInstanceState call (cleaner than PrefsFile)
-    static final String UNICORN_MODE = "UnicornMode";
+    protected static final String TAG = "FindMy";   // For debug logging purposes
+    static final String UNICORN_MODE = "UnicornMode";   // Store key variables in the onSaveInstanceState call (cleaner than PrefsFile)
+    private AddressResultReceiver mResultReceiver;  // this is the receiver for the FetchAddress intent
 
-    // this is the receiver for the FetchAddress intent
-    private AddressResultReceiver mResultReceiver;
+    protected GoogleApiClient mGoogleApiClient; // Provides the entry point to Google Play services.
+    protected Location mLastLocation;   //R epresents a geographical location.
 
-    /**
-     * Provides the entry point to Google Play services.
-     */
-    protected GoogleApiClient mGoogleApiClient;
-    /**
-     * Represents a geographical location.
-     */
-    protected Location mLastLocation;
-//    protected TextView mLatitudeText;
-//    protected TextView mLongitudeText;
-
-    View mainButtons;          // initial buttons
-    View unicornButtons;       // detailed button view when main UNICORN button pressed
-
-    Button unicornButton;
-    Boolean unicorn_mode;
+    View mainButtons;           // initial buttons
+    View unicornButtons;        // detailed button view when main UNICORN button pressed
+    Unicorn unicorns[];         // an array of Unicorns
+    Button unicornButton;       // main UNICORN button
+    Boolean unicorn_mode = false;           // TRUE if the UNICORN buttons are visible
+    Boolean location_permission = false;    // TRUE if we have permission to find location
 
     SupportMapFragment mapFragment;
-    GoogleMap map;
+    GoogleMap map;                  // the map fragment object
     ViewGroup mapParent = null;    // TODO - not entirely sure this is good enough!
-
-    // create an array of Unicorns
-    Unicorn unicorns[];
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -80,21 +67,17 @@ public class MainActivity extends AppCompatActivity implements
         // set the main view
         setContentView(R.layout.activity_main);
 
-        // find the Map fragment so we can work with it...
-        mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        if (mapFragment == null) {
-            Log.i(TAG, "Can't call getMapAsync as mapFragment is null - not sure what to do!");
-        } else {
-            mapFragment.getMapAsync(this);
+        // Get the connection to the Google API sorted - for getting locations/address
+        buildGoogleApiClient();
+        // and ensure we have permissions for the actual calls later on...
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "onCreate - NO PERMISSIONS - Requesting...");
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_LOCATION);
         }
 
-        // Get the connection to the Google API sorted
-        Log.i(TAG, "...buildGoogleApiClient");
-        buildGoogleApiClient();
-
         // Get the ID of the main button view, and the unicorn scrollable button view
-        Log.i(TAG, "...mainButtons");
         mainButtons = findViewById(R.id.main_buttons);
         unicornButtons = findViewById(R.id.unicorn_buttons);
 
@@ -103,18 +86,35 @@ public class MainActivity extends AppCompatActivity implements
         Spanned result = getSpannedHtml(getString(R.string.unicorn_button_text));
         unicornButton.setText(result);
 
-        // setting start-mode, may get overwritten onRestoreInstanceState
-        unicorn_mode = false;
-
-        // Set up all the unicorn names, etc.
-        Log.i(TAG, "...creating unicorn array");
-        createUnicornArray();
-
         // Ensure the FetchAddress service has something to return result to
         mResultReceiver = new AddressResultReceiver(new Handler());
 
         Log.i(TAG, "...done onCreate");
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Log.i(TAG, "onResume");
+        // ALWAYS called after onCreate, so see if we have the Map Fragment sorted
+        mapFragment = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
+
+        mapFragment.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap map) {
+                Log.i(TAG, "onMapReady");
+                map.addMarker(new MarkerOptions()
+                        .position(new LatLng(0, 0))
+                        .title("Center of the World")
+                        .snippet("Latitude 0 / Longitude 0"));
+                setupMap(map);
+            }
+        });
+
+
+
+    } // onResume
 
     private Spanned getSpannedHtml(String string) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
@@ -125,60 +125,41 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-
-        googleMap.addMarker(new MarkerOptions()
-                .position(new LatLng(0, 0))
-                .title("Center of the World")
-                .snippet("Latitude 0 / Longitude 0"));
-
-        // Sets the map type to be "hybrid"
-        googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-        // Sets my-location button
+    public void setupMap (GoogleMap googleMap) {
+        Log.i(TAG, "setupMap");
+        // Check for permissions, request if not there...
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling to request missing permissions
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+            Log.i(TAG, "setupMap - NO PERMISSIONS - Requesting...");
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_LOCATION);
             return;
         }
-        googleMap.setMyLocationEnabled(true);
-        // Set the map toolbar to be enabled
-
-        googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+        googleMap.setMyLocationEnabled(true);       // Sets my-location button - Needs the permissions
+        googleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);    // Sets the map type to be "hybrid"
+        googleMap.getUiSettings().setMyLocationButtonEnabled(false);    // Set the map toolbar to be enabled
         googleMap.getUiSettings().setMapToolbarEnabled(false);
         googleMap.getUiSettings().setZoomControlsEnabled(true);
 
-
         // Setting a custom info window adapter for the google map
         googleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
-
             // Use default InfoWindow frame
             @Override
             public View getInfoWindow(Marker arg0) {
                 return null;
             }
-
             // Defines the contents of the InfoWindow
             @Override
             public View getInfoContents(Marker arg0) {
-
                 // Getting view from the layout file info_window_layout
                 View v = getLayoutInflater().inflate(R.layout.map_marker, mapParent, false);
-
                 // get and set the TextViews to set Unicorn details
                 TextView tvName = (TextView) v.findViewById(R.id.markerName);
                 TextView tvSnippet = (TextView) v.findViewById(R.id.markerSnippet);
                 tvName.setText(arg0.getTitle());
                 tvSnippet.setText(arg0.getSnippet());
-
                 // Returning the view containing InfoWindow contents
                 return v;
-
             }
         });
 
@@ -201,6 +182,14 @@ public class MainActivity extends AppCompatActivity implements
 
     public void onStartUnicorns(View v) {
         Log.i(TAG, "...onStartUnicorns");
+        if (location_permission == Boolean.FALSE) {
+            Toast.makeText(getApplicationContext(), "No permission to find Location", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Set up all the unicorn names, etc.
+        createUnicornArray();
+
         // remove the default buttons from view, and bring up the special UNICORN ones
         mainButtons.setVisibility(View.GONE);
         unicornButtons.setVisibility(View.VISIBLE);
@@ -221,7 +210,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void onStartSpecial(View v) {
-
+        Log.i(TAG, "...onStartSpecial");
+        if (location_permission == Boolean.FALSE) {
+            Toast.makeText(getApplicationContext(), "No permission to find Location", Toast.LENGTH_SHORT).show();
+            return;
+        }
         //TODO - Need to doing something with "Special" view
         Toast.makeText(getApplicationContext(), "Can't do anything special yet", Toast.LENGTH_SHORT).show();
 
@@ -229,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
     public void onUnicornButton(View v) {
-
+        Log.i(TAG, "onUnicornButton");
         int i;
 
         switch (v.getId()) {
@@ -298,19 +291,17 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void onStartMyself(View v) {
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // ODO: Consider calling to request missing permissions
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-
+        if (!location_permission) {
+            Toast.makeText(getApplicationContext(), "No permission to find Location", Toast.LENGTH_SHORT).show();
             return;
         }
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+        Toast.makeText(getApplicationContext(), "Trying to locate you...", Toast.LENGTH_SHORT).show();
+        try {
+            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        } catch (Exception ex) {
+            Log.e(TAG,"Error creating location service: " + ex.getMessage() );
+        }
         if (mLastLocation != null) {
             Toast.makeText(getApplicationContext(),
                     "You are at Latitude:" + mLastLocation.getLatitude() +
@@ -395,6 +386,26 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        Log.v(TAG, "onRequestPermissionResult... ");
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        Log.v(TAG, "onRequestPermissionResult...LOCATION=GRANTED ");
+                    location_permission = true;
+
+                } else {
+                    Log.v(TAG, "onRequestPermissionResult...LOCATION=DENIED ");
+                    location_permission = false;
+                }
+            }
+        }
+    }
+
     /**
      * Runs when a GoogleApiClient object successfully connects.
      */
@@ -405,22 +416,19 @@ public class MainActivity extends AppCompatActivity implements
         // updates. Gets the best and most recent location currently available, which may be null
         // in rare cases when a location is not available.
         Log.i(TAG, "API: onConnected...");
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // ODO: Consider calling to request missing permissions
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "onConnected - NO PERMISSIONS");
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    MY_PERMISSIONS_REQUEST_LOCATION);
 
-            return;
+        } else {
+            Log.i(TAG, "onConnected - WE HAVE PERMISSION");
+            location_permission = true;
         }
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        //        if (mLastLocation != null) {
-        //            mLatitudeText.setText(String.valueOf(mLastLocation.getLatitude()));
-        //            mLongitudeText.setText(String.valueOf(mLastLocation.getLongitude()));
-        //        }
     }
 
     @Override
