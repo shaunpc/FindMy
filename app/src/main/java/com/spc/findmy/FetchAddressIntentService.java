@@ -7,11 +7,9 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.ResultReceiver;
-import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -47,7 +45,7 @@ public class FetchAddressIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         String errorMessage = "";
-        String resultString = "";
+        String resultString;
         mReceiver = intent.getParcelableExtra(Constants.RECEIVER);
         // Check if receiver was properly registered.
         if (mReceiver == null) {
@@ -109,7 +107,7 @@ public class FetchAddressIntentService extends IntentService {
             Address address = addresses.get(0);
             Log.i(TAG, getString(R.string.address_found) + address.toString());
 
-            ArrayList<String> addressFragments = new ArrayList<String>();
+            // ArrayList<String> addressFragments = new ArrayList<String>();
             // Fetch the address lines using {@code getAddressLine},
             // join them, and send them to the thread.
 //            for (int i = 0; i < address.getMaxAddressLineIndex(); i++) {
