@@ -7,6 +7,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
@@ -22,6 +23,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -31,6 +33,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import static com.spc.findmy.Constants.MY_PERMISSIONS_REQUEST_LOCATION;
 
@@ -46,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements
     static final String UNICORN_MODE = "UnicornMode";   // Store key variables in the onSaveInstanceState call (cleaner than PrefsFile)
     protected GoogleApiClient mGoogleApiClient; // Provides the entry point to Google Play services.
     protected Location mLastLocation;   //R epresents a geographical location.
+    private FusedLocationProviderClient mFusedLocationClient;
     View mainButtons;           // initial buttons
     View unicornButtons;        // detailed button view when main UNICORN button pressed
     Unicorn unicorns[];         // an array of Unicorns
@@ -65,9 +69,11 @@ public class MainActivity extends AppCompatActivity implements
 
         // Get the connection to the Google API sorted - for getting locations/address
         buildGoogleApiClient();
+
         // and ensure we have permissions for the actual calls later on...
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkCallingOrSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "onCreate - NO PERMISSIONS - Requesting...");
+            Toast.makeText(getApplicationContext(), "Location Permission Required", Toast.LENGTH_SHORT).show();
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
                     MY_PERMISSIONS_REQUEST_LOCATION);
@@ -78,12 +84,15 @@ public class MainActivity extends AppCompatActivity implements
         unicornButtons = findViewById(R.id.unicorn_buttons);
 
         // Put some funky coloured text in the UNICORN button
-        unicornButton = (Button) findViewById(R.id.button_unicorn);
+        unicornButton = findViewById(R.id.button_unicorn);
         Spanned result = getSpannedHtml(getString(R.string.unicorn_button_text));
         unicornButton.setText(result);
 
         // Ensure the FetchAddress service has something to return result to
         mResultReceiver = new AddressResultReceiver(new Handler());
+
+        //Ensure the FusedLocationClient has something
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         Log.i(TAG, "...done onCreate");
     }
@@ -124,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements
     public void setupMap (GoogleMap googleMap) {
         Log.i(TAG, "setupMap");
         // Check for permissions, request if not there...
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (checkCallingOrSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkCallingOrSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "setupMap - NO PERMISSIONS - Requesting...");
             Toast.makeText(getApplicationContext(), "Location Permission Required", Toast.LENGTH_SHORT).show();
             ActivityCompat.requestPermissions(this,
@@ -151,8 +160,8 @@ public class MainActivity extends AppCompatActivity implements
                 // Getting view from the layout file info_window_layout
                 View v = getLayoutInflater().inflate(R.layout.map_marker, mapParent, false);
                 // get and set the TextViews to set Unicorn details
-                TextView tvName = (TextView) v.findViewById(R.id.markerName);
-                TextView tvSnippet = (TextView) v.findViewById(R.id.markerSnippet);
+                TextView tvName = v.findViewById(R.id.markerName);
+                TextView tvSnippet = v.findViewById(R.id.markerSnippet);
                 tvName.setText(arg0.getTitle());
                 tvSnippet.setText(arg0.getSnippet());
                 // Returning the view containing InfoWindow contents
@@ -311,29 +320,37 @@ public class MainActivity extends AppCompatActivity implements
             return;
         }
         Toast.makeText(getApplicationContext(), "Trying to locate you...", Toast.LENGTH_SHORT).show();
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        if (mLastLocation != null) {
-            Toast.makeText(getApplicationContext(),
-                    "You are at Latitude:" + mLastLocation.getLatitude() +
-                            " / Longitude:" + mLastLocation.getLongitude()
-                    , Toast.LENGTH_SHORT).show();
-            // Construct a CameraPosition focusing on where we are and animate the camera to that position.
-            CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()))
-                    .zoom(15)                    // Sets the zoom to be quite detailed
-                    .bearing(0)                // Sets the orientation of the camera to east
-                    .tilt(5)                   // Sets the tilt of the camera to 30 degrees
-                    .build();                   // Creates a CameraPosition from the builder
-            map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-        } else {
-            Toast.makeText(getApplicationContext(), "Can't find myself for some reason!", Toast.LENGTH_SHORT).show();
-        }
 
-        // Only start the service to fetch the address if GoogleApiClient is connected.
-        if (mGoogleApiClient.isConnected() && mLastLocation != null) {
-            startIntentService();
-        }
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location... although it can be null
+                        if (location != null) {
+                            mLastLocation = location;
+                            Toast.makeText(getApplicationContext(),
+                                    "You are at Latitude:" + mLastLocation.getLatitude() +
+                                            " / Longitude:" + mLastLocation.getLongitude()
+                                    , Toast.LENGTH_SHORT).show();
+                            // Construct a CameraPosition focusing on where we are and animate the camera to that position.
+                            CameraPosition cameraPosition = new CameraPosition.Builder()
+                                    .target(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()))
+                                    .zoom(15)                    // Sets the zoom to be quite detailed
+                                    .bearing(0)                // Sets the orientation of the camera to east
+                                    .tilt(5)                   // Sets the tilt of the camera to 30 degrees
+                                    .build();                   // Creates a CameraPosition from the builder
+                            map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
+                            // Only start the service to fetch the address if GoogleApiClient is connected.
+                            if (mGoogleApiClient.isConnected() && mLastLocation != null) {
+                                startIntentService();
+                            }
+
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Can't find myself for some reason!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
     }
 
     // Builds a GoogleApiClient. Uses the addApi() method to request the LocationServices API.
@@ -361,7 +378,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
         Log.v(TAG, "onRequestPermissionResult... ");
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_LOCATION: {
@@ -384,7 +401,7 @@ public class MainActivity extends AppCompatActivity implements
 
     // Runs when a GoogleApiClient object fails to connect
     @Override
-    public void onConnectionFailed(ConnectionResult result) {
+    public void onConnectionFailed(@NonNull ConnectionResult result) {
         int err = result.getErrorCode();
         Log.i(TAG, "API: Connection failed: ConnectionResult.getErrorCode() = " + err);
     }
@@ -481,18 +498,20 @@ public class MainActivity extends AppCompatActivity implements
             mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
             Log.v(TAG, "AddressOutput is " + mAddressOutput);
 
-            if (unicorn_mode) {
-                if (resultCode == Constants.SUCCESS_RESULT) {
-                    Toast.makeText(getApplicationContext(), "Unicorn has been found in " + mAddressOutput, Toast.LENGTH_SHORT).show();
-                }
-                if (resultCode == Constants.FAILURE_RESULT
-                        && mAddressOutput.equals(getResources().getString(R.string.no_address_found))) {
-                    Toast.makeText(getApplicationContext(), "Looks like this Unicorn is flying over water!", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                // Show a toast message if an address was found.
-                if (resultCode == Constants.SUCCESS_RESULT) {
-                    Toast.makeText(getApplicationContext(), "You're in " + mAddressOutput, Toast.LENGTH_SHORT).show();
+            if (mAddressOutput != null) {
+                if (unicorn_mode) {
+                    if (resultCode == Constants.SUCCESS_RESULT) {
+                        Toast.makeText(getApplicationContext(), "Unicorn has been found in " + mAddressOutput, Toast.LENGTH_SHORT).show();
+                    }
+                    if (resultCode == Constants.FAILURE_RESULT
+                            && mAddressOutput.equals(getResources().getString(R.string.no_address_found))) {
+                        Toast.makeText(getApplicationContext(), "Looks like this Unicorn is flying over water!", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    // Show a toast message if an address was found.
+                    if (resultCode == Constants.SUCCESS_RESULT) {
+                        Toast.makeText(getApplicationContext(), "You're in " + mAddressOutput, Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         }

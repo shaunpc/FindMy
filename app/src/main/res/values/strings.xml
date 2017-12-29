@@ -59,6 +59,8 @@
     <string name="invalid_lat_long_used">Invalid lat_long_used</string>
     <string name="no_address_found">No address found</string>
     <string name="address_found">Address found</string>
+    <string name="mm_name">Name</string>
+    <string name="mm_snippet">Snippet</string>
 
 
 </resources>

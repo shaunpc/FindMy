@@ -5,6 +5,8 @@
 
     <dimen name="layout_padding">12dp</dimen>
     <dimen name="lat_long_text_size">16sp</dimen>
+    <dimen name="mm_name">14sp</dimen>
+    <dimen name="mm_snippet">12sp</dimen>
     <dimen name="text_margin_top">24dp</dimen>
     <dimen name="text_margin_side">10dp</dimen>
 
